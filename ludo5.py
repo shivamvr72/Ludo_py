@@ -173,26 +173,24 @@ def game_play(player, coin, dice):
                     if nkills[0] == "R" and coin[0] != "R":
                         players_position["red"][nkills] = -1
                         print("Red executed", players_position["red"][nkills])
-                        return True
+                        break
                     elif nkills[0] == "B" and coin[0] != "B":
                         players_position["blue"][nkills] = -1
                         print("blue executed", players_position["blue"][nkills])
-                        return True
+                        break
                     elif nkills[0] == "G" and coin[0] != "G":
                         players_position["green"][nkills] = -1
                         print("green executed", players_position["green"][nkills])
-                        return True
+                        break
                     elif nkills[0] == "Y" and coin[0] != "Y":
                         players_position["yellow"][nkills] = -1
                         print("yellow executed", players_position["yellow"][nkills])
-                        return True
+                        break
                 break
 
     players_position[player][coin] = players_position[player][coin] + dice
     player_upcoming = players_position[player][coin]
     start_boarding(player, dice, player_upcoming)
-    
-    return False
     # n = random.randint(1,6)
 
                    
