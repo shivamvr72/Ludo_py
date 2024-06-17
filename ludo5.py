@@ -5,7 +5,8 @@ for i in range(15):
     for j in range(15):
         ludo_cordinated.append({(j, i): ""})
 
-players_position = {"blue": {"B1": -1, "B2": -1, "B3": -1, "B4": -1}, "red": {"R1": -1, "R2": -1, "R3": -1, "R4": -1}, "green": {"G1": -1, "G2": -1, "G3": -1, "G4": -1}, "yellow": {"Y1": -1, "Y2": -1, "Y3": -1, "Y4": -1}}
+# players_position = {"blue": {"B1": -1, "B2": -1, "B3": -1, "B4": -1}, "red": {"R1": -1, "R2": -1, "R3": -1, "R4": -1}, "green": {"G1": -1, "G2": -1, "G3": -1, "G4": -1}, "yellow": {"Y1": -1, "Y2": -1, "Y3": -1, "Y4": -1}}
+players_position = {}
 
 home_coordinated = {"red": {"R1": (2, 2), "R2": (2, 3), "R3": (3, 2), "R4": (3, 3)}, "blue": {"B1": (2, 11), "B2": (2, 12), "B3": (3, 11), "B4": (
     3, 12)}, "green": {"G1": (11, 2), "G2": (11, 3), "G3": (12, 2), "G4": (12, 3)}, "yellow": {"Y1": (11, 11), "Y2": (11, 12), "Y3": (12, 11), "Y4": (12, 12)}}
@@ -55,11 +56,9 @@ bluehome = ((2, 11), (3, 11), (2, 12), (3, 12))
 greenhome = ((11, 2), (12, 2), (11, 3), (12, 3))
 yellowhome = ((11, 11), (12, 11), (11, 12), (12, 12))
 
-# starting position
-r_start = (6, 1)
-b_start = (13, 6)
-g_start = (1, 8)
-y_start = (8, 13)
+
+# winner list 
+winners = []
 
 
 # home position
@@ -104,7 +103,7 @@ def pathways(ludo, dictionary):
 
 def set_coin_operation(ludo, dictionary, coin_dict, cordinates):
     for coin, value in coin_dict.items():
-        if value != -1:
+        if value != -1 and value <= 56:
             cordinate = cordinates[value]
             if cordinate == ludo:
                 index = ludo_cordinated.index(dictionary)
@@ -151,15 +150,17 @@ def start_boarding(c_player, dice, player_upcoming):
 
 def game_play(player, coin, dice):
     cord = None
+    flag = False
 
-    if player == "blue":
-        cord = blue_path_cordiantes[players_position[player][coin] + dice]
-    elif player == "red":
-        cord = red_path_cordinates[players_position[player][coin] + dice]
-    elif player == "green":
-        cord = green_path_cordinates[players_position[player][coin] + dice]
-    elif player == "yellow":
-        cord = yellow_path_cordinates[players_position[player][coin] + dice]
+    if (players_position[player][coin] + dice) < 56:
+        if player == "blue":
+            cord = blue_path_cordiantes[players_position[player][coin] + dice]
+        elif player == "red":
+            cord = red_path_cordinates[players_position[player][coin] + dice]
+        elif player == "green":
+            cord = green_path_cordinates[players_position[player][coin] + dice]
+        elif player == "yellow":
+            cord = yellow_path_cordinates[players_position[player][coin] + dice]
    
     print("cord...", cord)
     for dics in ludo_cordinated:
@@ -173,46 +174,58 @@ def game_play(player, coin, dice):
                     if nkills[0] == "R" and coin[0] != "R":
                         players_position["red"][nkills] = -1
                         print("Red executed", players_position["red"][nkills])
+                        flag = True
                         break
                     elif nkills[0] == "B" and coin[0] != "B":
                         players_position["blue"][nkills] = -1
                         print("blue executed", players_position["blue"][nkills])
+                        flag = True
                         break
                     elif nkills[0] == "G" and coin[0] != "G":
                         players_position["green"][nkills] = -1
                         print("green executed", players_position["green"][nkills])
+                        flag = True
                         break
                     elif nkills[0] == "Y" and coin[0] != "Y":
                         players_position["yellow"][nkills] = -1
                         print("yellow executed", players_position["yellow"][nkills])
+                        flag = True
                         break
                 break
-
-    players_position[player][coin] = players_position[player][coin] + dice
-    player_upcoming = players_position[player][coin]
-    start_boarding(player, dice, player_upcoming)
+            
+    if players_position[player][coin] + dice <= 56:
+        players_position[player][coin] = players_position[player][coin] + dice
+        player_upcoming = players_position[player][coin]
+        start_boarding(player, dice, player_upcoming)
+    else:
+        return True
     # n = random.randint(1,6)
+    if flag == True:
+        return True
+    else:
+        return False
 
                    
 def ask_roll_dice():
-    x = input("Roll The Dice or For Exit N: ").strip(" ").capitalize()
-    if x == "N":
+    n = input("Roll The Dice or For Exit N: ").strip(" ").capitalize()
+    if n == "N":
         return "N"
     else:
-        n = random.randint(1, 6)
+        # n = random.randint(1, 6)
         print("Dice: ", n)
-        return n
+        return int(n)
     
 def ask_coin_to_move(player, coins, n):
     players_coins_on_path = [player[0].capitalize()]
     all_at_home = all(value == -1 for value in coins.values())
     
     for rcoin, value in coins.items():
-        if (value != -1 and value != 56) or (value == -1 and n == 6):
+        if (value != -1 and value != 56 and (value + n) <= 56) or (value == -1 and n == 6):
             players_coins_on_path.append(rcoin[1])
 
     print(players_coins_on_path)
-    
+    if len(players_coins_on_path) == 1:
+        return False
     while True:
         coin = input("\nEnter coin to move: ").strip(" ").capitalize()
         if coin in players_coins_on_path:
@@ -242,14 +255,19 @@ def move_piece(player, coin, steps):
             overshoot = current_position + steps - 56
             new_position = 56 - overshoot
 
-        game_play(player, coin, steps)
+        iskill = game_play(player, coin, steps)
+        if iskill:
+            return True
         
         if new_position == 56:
             print(f"{player.capitalize()} has reached the finish!")      
         return True
 
 def check_win(player):
-    return all(position == 56 for position in players_position[player].values())
+    iswin = all(position == 56 for position in players_position[player].values())
+    if iswin:
+        winners.append(player)
+    return iswin
 
 
 def on_the_way(player, coins):   
@@ -265,6 +283,9 @@ def on_the_way(player, coins):
             return False
         
         coin = ask_coin_to_move(player, coins, n)
+        if not coin:
+            return False
+        
         if move_piece(player, coin, n):
             print(f"Moved {coin} for {player}. New Position: {players_position[player][coin]}")
             if check_win(player):
@@ -279,6 +300,20 @@ def on_the_way(player, coins):
 
 
 def start_game():
+    flag = True
+    while flag:
+        try:
+            nply = int(input("Enter number of players: ").strip(" "))
+            flag = False
+        except:
+            continue    
+    
+    plyer_color = ["blue", "red", "green", "yellow"]
+    for n in range(nply):
+        players_position[plyer_color[n]] = {f"{plyer_color[n][0].capitalize()}1": -1, f"{plyer_color[n][0].capitalize()}2": -1, f"{plyer_color[n][0].capitalize()}3": -1, f"{plyer_color[n][0].capitalize()}4": -1}
+    print(players_position, "run time list")
+    
+    
     start_boarding("blue", "0", "0")
     flag = True
     while flag:
