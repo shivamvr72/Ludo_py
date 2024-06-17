@@ -197,13 +197,14 @@ def game_play(player, coin, dice):
         players_position[player][coin] = players_position[player][coin] + dice
         player_upcoming = players_position[player][coin]
         start_boarding(player, dice, player_upcoming)
+        if flag == True:
+            return "killed"
+        else:
+            return False
     else:
         return True
     # n = random.randint(1,6)
-    if flag == True:
-        return True
-    else:
-        return False
+    
 
                    
 def ask_roll_dice():
@@ -223,7 +224,7 @@ def ask_coin_to_move(player, coins, n):
         if (value != -1 and value != 56 and (value + n) <= 56) or (value == -1 and n == 6):
             players_coins_on_path.append(rcoin[1])
 
-    print(players_coins_on_path)
+    print("Movable Coins: ", players_coins_on_path)
     if len(players_coins_on_path) == 1:
         return False
     while True:
@@ -248,19 +249,18 @@ def move_piece(player, coin, steps):
             return False
     else:
         if current_position + steps <= 56:
-            print(steps, " step1")
             new_position = current_position + steps
         else:
-            print(steps, " step2")
             overshoot = current_position + steps - 56
             new_position = 56 - overshoot
 
         iskill = game_play(player, coin, steps)
-        if iskill:
-            return True
+        if iskill =="killed":
+            return "killed"
         
         if new_position == 56:
-            print(f"{player.capitalize()} has reached the finish!")      
+            print(f"{coin} has reached the finish!")
+            return "reached"
         return True
 
 def check_win(player):
@@ -286,7 +286,10 @@ def on_the_way(player, coins):
         if not coin:
             return False
         
-        if move_piece(player, coin, n):
+        ans = move_piece(player, coin, n)
+        if ans == "killed" or ans == "reached":
+            continue
+        if ans:
             print(f"Moved {coin} for {player}. New Position: {players_position[player][coin]}")
             if check_win(player):
                 print(f"{player.capitalize()} wins the game!")
@@ -310,7 +313,8 @@ def start_game():
     
     plyer_color = ["blue", "red", "green", "yellow"]
     for n in range(nply):
-        players_position[plyer_color[n]] = {f"{plyer_color[n][0].capitalize()}1": -1, f"{plyer_color[n][0].capitalize()}2": -1, f"{plyer_color[n][0].capitalize()}3": -1, f"{plyer_color[n][0].capitalize()}4": -1}
+        plr = plyer_color[n][0].capitalize()
+        players_position[plyer_color[n]] = {f"{plr}1": -1, f"{plr}2": -1, f"{plr}3": -1, f"{plr}4": -1}
     print(players_position, "run time list")
     
     
@@ -327,39 +331,6 @@ print(players_position)
 
 if __name__ == "__main__":
     start_game()
+
+
 # glpat-4ACWnyWexzYaPWQ16r9z
-
-
-
-
-# def on_the_way(player):   
-#     print(f"Turn: {player.capitalize()}")
-#     flag = True
-
-#     allowed = ['R', 'B', 'G', 'Y', '1', '2', '3', '4']
-#     while flag:
-#         coin = input("enter coin to move: ").strip("").capitalize()
-#         if coin in allowed:
-#             flag = False
-       
-#     n = int(input("enter the no: "))
-
-#     if coin.isdigit():
-#         prefix = player[0].capitalize()
-#         coin = prefix + str(coin)
-
-#     cvalue = players_position[player][coin]
-   
-#     if cvalue == -1 and n == 6:
-#         players_position[player][coin] = 0
-#         game_play(player, coin, 0)
-#         return True
-#     elif cvalue == -1 and n != 6:
-#         return False
-
-#     print(player, cvalue)
-#     if cvalue < 56:
-#         game_play(player, coin,  n)
-#         return True
-#     else:
-#         return True
